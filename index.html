@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kerajaan Bilangan: Petualangan Math Hero</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            100: '#e0f2fe',
+                            300: '#7dd3fc',
+                            500: '#0ea5e9',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        },
+                        magic: {
+                            light: '#e879f9',
+                            DEFAULT: '#c026d3',
+                            dark: '#86198f',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                        'spin-slow': 'spin 8s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles for Game Feel */
+        body {
+            background-color: #0f172a;
+            user-select: none; /* Prevent text selection */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile Premium App Container Constraint */
+        #app-container {
+            max-width: 480px; /* Mobile width constraint */
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .bg-pattern {
+            background-image: radial-gradient(rgba(255,255,255,0.1) 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        /* 3D Button Styles */
+        .btn-3d {
+            transition: all 0.1s;
+            position: relative;
+        }
+        .btn-3d:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 0 #000 !important;
+        }
+        .btn-3d:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Scrollbar Hidden but functional */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Progress Bar Animation */
+        .progress-bar-transition {
+            transition: width 1s linear;
+        }
+
+        .math-symbol-bg {
+            position: absolute;
+            color: rgba(255,255,255,0.1);
+            font-size: 4rem;
+            font-weight: bold;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .character-portrait {
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3), inset 0 -5px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="font-fredoka flex items-center justify-center min-h-screen">
+
+    <!-- MAIN APP CONTAINER (Responsif, auto margin, overflow y, pb-32) -->
+    <div id="app-container" class="relative w-full h-screen sm:h-[90vh] sm:rounded-[2rem] overflow-y-auto m-auto pb-32 bg-gradient-to-b from-brand-500 to-magic-dark text-white shadow-2xl transition-colors duration-500 no-scrollbar relative overflow-x-hidden">
+        
+        <!-- Background animated elements -->
+        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden w-full h-full opacity-50" id="bg-elements">
+            <div class="math-symbol-bg animate-float" style="top: 10%; left: 10%;">+</div>
+            <div class="math-symbol-bg animate-float" style="top: 30%; right: 15%; animation-delay: 1s;">×</div>
+            <div class="math-symbol-bg animate-float" style="top: 60%; left: 20%; animation-delay: 2s;">÷</div>
+            <div class="math-symbol-bg animate-float" style="top: 80%; right: 10%; animation-delay: 0.5s;">-</div>
+            <div class="math-symbol-bg animate-float text-yellow-300/20" style="top: 45%; left: 50%; font-size: 6rem; animation-delay: 1.5s;">%</div>
+        </div>
+
+        <div class="relative z-10 w-full min-h-full">
+
+            <!-- ================= SCREEN: LOADING ================= -->
+            <div id="screen-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-brand-900 z-50">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center text-5xl mb-4 animate-bounce">
+                    👑
+                </div>
+                <h1 class="text-3xl font-bold text-center text-yellow-400 mb-8 drop-shadow-lg">Kerajaan<br>Bilangan</h1>
+                <div class="w-64 h-4 bg-gray-800 rounded-full overflow-hidden border-2 border-white/20">
+                    <div id="loading-bar" class="h-full bg-gradient-to-r from-yellow-400 to-yellow-200 w-0 transition-all duration-300"></div>
+                </div>
+                <p id="loading-text" class="mt-4 text-sm animate-pulse">Menyiapkan Sihir Angka...</p>
+            </div>
+
+            <!-- ================= SCREEN: HOME ================= -->
+            <div id="screen-home" class="hidden absolute inset-0 flex flex-col items-center justify-between py-12 px-6">
+                <!-- Top Nav -->
+                <div class="w-full flex justify-between items-center mb-8">
+                    <button onclick="toggleDarkMode()" class="w-12 h-12 rounded-full glass flex items-center justify-center text-xl btn-3d shadow-[0_4px_0_0_rgba(0,0,0,0.2)]">
+                        <i class="fas fa-moon" id="dark-mode-icon"></i>
+                    </button>
+                    <button onclick="toggleFullscreen()" class="w-12 h-12 rounded-full glass flex items-center justify-center text-xl btn-3d shadow-[0_4px_0_0_rgba(0,0,0,0.2)]">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+
+                <!-- Logo & Title -->
+                <div class="flex-1 flex flex-col items-center justify-center w-full">
+                    <div class="relative mb-6">
+                        <div class="absolute -inset-4 bg-yellow-400 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                        <div class="w-32 h-32 bg-gradient-to-b from-yellow-300 to-yellow-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center text-6xl relative z-10 character-portrait animate-float">
+                            🧙‍♂️
+                        </div>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] mb-2 uppercase leading-tight tracking-wide">
+                        <span class="text-yellow-400 block mb-1">Kerajaan</span>
+                        Bilangan
+                    </h1>
+                    <p class="text-lg text-center text-brand-100 bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm">Petualangan Math Hero</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="w-full space-y-4">
+                    <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-green-400 to-green-600 rounded-2xl text-2xl font-bold text-white shadow-[0_6px_0_0_#166534] btn-3d border-2 border-white">
+                        <i class="fas fa-play mr-2"></i> MULAI PETUALANGAN
+                    </button>
+                    <div class="flex gap-4">
+                        <button onclick="showStats()" class="flex-1 py-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-2xl text-lg font-bold text-white shadow-[0_6px_0_0_#1e3a8a] btn-3d border-2 border-white/50">
+                            <i class="fas fa-trophy mr-2"></i> Prestasi
+                        </button>
+                        <button onclick="resetProgressConfirm()" class="flex-1 py-3 bg-gradient-to-r from-red-400 to-red-600 rounded-2xl text-lg font-bold text-white shadow-[0_6px_0_0_#7f1d1d] btn-3d border-2 border-white/50">
+                            <i class="fas fa-undo mr-2"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SCREEN: MAP (LEVEL SELECTION) ================= -->
+            <div id="screen-map" class="hidden absolute inset-0 flex flex-col">
+                <!-- Header -->
+                <div class="glass p-4 sticky top-0 z-20 flex justify-between items-center shadow-lg border-b-0">
+                    <button onclick="switchScreen('screen-home')" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center btn-3d">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="text-center font-bold">
+                        <div class="text-xs text-brand-100">Peta Dunia</div>
+                        <div class="text-lg text-yellow-300">Kerajaan Fantasi</div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full text-sm font-bold text-yellow-400">
+                        <i class="fas fa-star"></i> <span id="map-total-score">0</span>
+                    </div>
+                </div>
+
+                <!-- Map Content (Vertical Scroll) -->
+                <div class="flex-1 overflow-y-auto no-scrollbar p-6 relative pb-40 flex flex-col-reverse justify-start items-center" id="map-levels">
+                    <!-- Path line -->
+                    <div class="absolute w-2 bg-yellow-400/50 h-full left-1/2 -translate-x-1/2 z-0 rounded-full"></div>
+                    
+                    <!-- Levels will be injected here via JS -->
+                </div>
+            </div>
+
+            <!-- ================= SCREEN: MATERIAL / STORY ================= -->
+            <div id="screen-material" class="hidden absolute inset-0 p-6 flex flex-col">
+                <button onclick="switchScreen('screen-map')" class="absolute top-6 left-6 w-10 h-10 glass rounded-full flex items-center justify-center z-20 btn-3d shadow-lg">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                
+                <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full mt-10">
+                    <!-- Mascot Speech -->
+                    <div class="relative glass rounded-3xl p-6 mb-8 border-2 border-yellow-300/50 shadow-2xl">
+                        <!-- Speech bubble tail -->
+                        <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-8 h-8 glass transform rotate-45 border-r-2 border-b-2 border-yellow-300/50"></div>
+                        
+                        <div class="flex items-center gap-2 text-yellow-300 mb-2 font-bold text-lg border-b border-white/20 pb-2">
+                            <i class="fas fa-book-open"></i> <span id="material-title">Desa Angka</span>
+                        </div>
+                        <p id="material-content" class="text-lg leading-relaxed text-white">
+                            Halo! Aku Max. Di sini kita akan belajar membaca bilangan dan nilai tempat.
+                        </p>
+                    </div>
+
+                    <!-- Mascot Image -->
+                    <div class="w-32 h-32 mx-auto bg-gradient-to-b from-purple-500 to-purple-800 rounded-full border-4 border-white shadow-[0_10px_20px_rgba(0,0,0,0.5)] flex items-center justify-center text-6xl character-portrait animate-float relative z-10 mb-8">
+                        🧙‍♂️
+                    </div>
+
+                    <button onclick="startQuiz()" class="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl text-2xl font-bold text-white shadow-[0_6px_0_0_#9a3412] btn-3d border-2 border-white animate-pulse-fast text-shadow-sm">
+                        MULAI TANTANGAN! <i class="fas fa-rocket ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= SCREEN: GAMEPLAY ================= -->
+            <div id="screen-game" class="hidden absolute inset-0 flex flex-col bg-brand-900/90 backdrop-blur-md">
+                <!-- Game Header -->
+                <div class="p-4 flex justify-between items-center bg-black/30 border-b border-white/10">
+                    <button onclick="pauseGame()" class="w-10 h-10 glass rounded-full flex items-center justify-center btn-3d">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                    <div class="flex flex-col items-center">
+                        <div class="text-xs text-gray-300 uppercase tracking-widest font-bold" id="game-level-name">Level 1</div>
+                        <div class="text-xl font-bold text-yellow-400">Skor: <span id="game-score">0</span></div>
+                    </div>
+                    <div class="flex gap-1 text-red-500 text-xl" id="game-lives">
+                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-heart"></i>
+                    </div>
+                </div>
+
+                <!-- Timer Bar -->
+                <div class="w-full h-3 bg-gray-800">
+                    <div id="game-timer-bar" class="h-full bg-green-500 progress-bar-transition w-full"></div>
+                </div>
+
+                <!-- Question Area -->
+                <div class="flex-1 p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-4 text-sm font-bold text-brand-100">
+                        <div>Soal <span id="game-q-current">1</span>/10</div>
+                        <div class="flex items-center gap-1 text-orange-400 bg-orange-400/20 px-3 py-1 rounded-full">
+                            <i class="fas fa-fire"></i> Combo: <span id="game-combo">0</span>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-3xl p-6 mb-auto min-h-[160px] flex items-center justify-center text-center shadow-xl border-2 border-white/20 relative">
+                        <button onclick="showHint()" class="absolute -top-3 -right-3 w-10 h-10 bg-yellow-400 rounded-full text-blue-900 border-2 border-white shadow-lg btn-3d flex items-center justify-center text-lg z-10">
+                            <i class="fas fa-lightbulb"></i>
+                        </button>
+                        <h2 id="game-question" class="text-2xl sm:text-3xl font-bold leading-tight drop-shadow-md">
+                            Berapa hasil dari 500 + 250?
+                        </h2>
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div id="game-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        <!-- Buttons injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SCREEN: RESULT ================= -->
+            <div id="screen-result" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md p-6 z-40">
+                <div class="w-full max-w-sm glass-dark p-8 rounded-3xl border-2 border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.3)] text-center relative overflow-hidden">
+                    
+                    <!-- Decor -->
+                    <div class="absolute -top-10 -right-10 text-6xl opacity-20">🌟</div>
+                    <div class="absolute -bottom-10 -left-10 text-6xl opacity-20">🏆</div>
+
+                    <h2 id="result-title" class="text-3xl font-bold text-white mb-2 uppercase tracking-wide">Luar Biasa!</h2>
+                    
+                    <div class="flex justify-center gap-2 mb-6 text-4xl" id="result-stars">
+                        <!-- Stars injected here -->
+                    </div>
+
+                    <div class="space-y-3 mb-8 bg-black/30 p-4 rounded-xl border border-white/10">
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-300">Skor Level:</span>
+                            <span class="font-bold text-yellow-400" id="result-score">100</span>
+                        </div>
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-300">Jawaban Benar:</span>
+                            <span class="font-bold text-green-400" id="result-correct">10/10</span>
+                        </div>
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-300">Max Combo:</span>
+                            <span class="font-bold text-orange-400" id="result-max-combo">5x</span>
+                        </div>
+                    </div>
+
+                    <div id="result-badge" class="hidden mb-6 flex flex-col items-center animate-bounce">
+                        <div class="text-5xl mb-2" id="badge-icon">🏅</div>
+                        <div class="text-sm text-brand-100 bg-brand-900/50 px-3 py-1 rounded-full border border-brand-500">Badge Baru Didapat!</div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button id="btn-next-level" onclick="switchScreen('screen-map')" class="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl text-xl font-bold text-blue-900 shadow-[0_5px_0_0_#ca8a04] btn-3d border border-white">
+                            LANJUT <i class="fas fa-forward ml-2"></i>
+                        </button>
+                        <button onclick="retryLevel()" class="w-full py-3 glass rounded-xl text-lg font-bold text-white shadow-[0_5px_0_0_rgba(0,0,0,0.3)] btn-3d">
+                            <i class="fas fa-redo mr-2"></i> Ulangi Level
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SCREEN: CERTIFICATE ================= -->
+            <div id="screen-certificate" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-brand-900 p-4 z-50">
+                <div class="w-full max-w-md bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-yellow-50 p-2 rounded-lg shadow-2xl border-8 border-yellow-600 relative text-center text-slate-800">
+                    <div class="border-4 border-double border-yellow-800 p-6 sm:p-8 relative">
+                        <div class="absolute top-2 left-2 text-3xl">👑</div>
+                        <div class="absolute top-2 right-2 text-3xl">👑</div>
+                        <div class="absolute bottom-2 left-2 text-3xl">🌟</div>
+                        <div class="absolute bottom-2 right-2 text-3xl">🌟</div>
+
+                        <h1 class="text-3xl sm:text-4xl font-extrabold text-yellow-700 mb-2 font-serif uppercase tracking-wider">Sertifikat Penghargaan</h1>
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-6">Diberikan Kepada</p>
+                        
+                        <div class="text-2xl sm:text-3xl font-bold text-blue-800 mb-6 border-b-2 border-gray-400 pb-2 inline-block px-8">
+                            PAHLAWAN MATEMATIKA
+                        </div>
+                        
+                        <p class="text-sm sm:text-base text-gray-700 mb-6 leading-relaxed px-4 font-medium">
+                            Karena telah berhasil menyelesaikan semua misi dan menguasai Matematika Kelas 4 SD di Kerajaan Bilangan.
+                        </p>
+                        
+                        <div class="flex justify-center gap-4 mb-6 text-4xl">
+                            🔢 🌳 ⛰️ 👑
+                        </div>
+
+                        <div class="flex justify-between items-end mt-8">
+                            <div class="text-center w-1/3">
+                                <div class="text-4xl mb-1">🧙‍♂️</div>
+                                <div class="border-t border-gray-500 pt-1 text-xs font-bold">Max, Penyihir Angka</div>
+                            </div>
+                            <div class="w-16 h-16 bg-yellow-400 rounded-full border-4 border-yellow-600 shadow-inner flex items-center justify-center text-2xl font-bold text-yellow-800 transform rotate-12">
+                                100
+                            </div>
+                            <div class="text-center w-1/3">
+                                <div class="font-bold text-sm mb-2 text-blue-600">Total Skor</div>
+                                <div class="border-t border-gray-500 pt-1 text-lg font-bold" id="cert-score">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="switchScreen('screen-home')" class="mt-8 px-8 py-3 bg-white text-blue-900 font-bold rounded-full shadow-lg btn-3d">
+                    Kembali ke Beranda
+                </button>
+            </div>
+
+            <!-- ================= OVERLAY: PAUSE & SETTINGS ================= -->
+            <div id="overlay-pause" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                <div class="glass p-8 rounded-3xl max-w-xs w-full text-center border-2 border-white/20">
+                    <h2 class="text-3xl font-bold text-white mb-6">Game Dijeda</h2>
+                    <div class="space-y-4">
+                        <button onclick="resumeGame()" class="w-full py-3 bg-green-500 rounded-xl text-xl font-bold text-white shadow-[0_5px_0_0_#166534] btn-3d border border-white/50">
+                            <i class="fas fa-play mr-2"></i> Lanjutkan
+                        </button>
+                        <button onclick="quitGame()" class="w-full py-3 bg-red-500 rounded-xl text-lg font-bold text-white shadow-[0_5px_0_0_#991b1b] btn-3d border border-white/50">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Keluar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= OVERLAY: STATS ================= -->
+            <div id="overlay-stats" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div class="glass-dark p-6 rounded-3xl w-full max-w-sm border-2 border-yellow-400 shadow-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-yellow-400">Prestasi Saya</h2>
+                        <button onclick="closeStats()" class="text-white text-xl"><i class="fas fa-times"></i></button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white/10 p-4 rounded-2xl text-center border border-white/5">
+                            <div class="text-3xl text-yellow-400 mb-1"><i class="fas fa-star"></i></div>
+                            <div class="text-2xl font-bold" id="stat-total-score">0</div>
+                            <div class="text-xs text-gray-400">Total Skor</div>
+                        </div>
+                        <div class="bg-white/10 p-4 rounded-2xl text-center border border-white/5">
+                            <div class="text-3xl text-orange-400 mb-1"><i class="fas fa-fire"></i></div>
+                            <div class="text-2xl font-bold" id="stat-max-combo">0</div>
+                            <div class="text-xs text-gray-400">Max Combo</div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-bold mb-3 border-b border-white/20 pb-2">Koleksi Badge</h3>
+                    <div class="grid grid-cols-4 gap-2" id="badge-container">
+                        <!-- Badges injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mascot Hint Overlay (Temporarily pops up during game) -->
+            <div id="hint-popup" class="hidden absolute bottom-24 right-4 z-40 animate-bounce-slow">
+                <div class="relative glass rounded-2xl p-4 border border-yellow-300 shadow-lg text-sm font-bold text-white max-w-[200px]">
+                    <div class="absolute -bottom-3 right-6 w-6 h-6 glass transform rotate-45 border-r border-b border-yellow-300"></div>
+                    <span id="hint-text">Coba perhatikan nilai tempatnya!</span>
+                </div>
+                <div class="absolute -bottom-10 right-0 text-5xl drop-shadow-md">🧙‍♂️</div>
+            </div>
+
+            <!-- Toast Container -->
+            <div id="toast-container" class="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script>
+        /**
+         * AUDIO ENGINE (Web Audio API)
+         * Fully offline synthesizer
+         */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const Sound = {
+            playTone: (freq, type, duration, vol = 0.1) => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            },
+            click: () => Sound.playTone(600, 'sine', 0.1),
+            correct: () => {
+                Sound.playTone(440, 'sine', 0.1); // A4
+                setTimeout(() => Sound.playTone(554.37, 'sine', 0.1), 100); // C#5
+                setTimeout(() => Sound.playTone(659.25, 'sine', 0.2), 200); // E5
+            },
+            wrong: () => {
+                Sound.playTone(300, 'sawtooth', 0.2, 0.2);
+                setTimeout(() => Sound.playTone(250, 'sawtooth', 0.3, 0.2), 150);
+            },
+            win: () => {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    setTimeout(() => Sound.playTone(f, 'square', 0.15, 0.05), i * 150);
+                });
+            },
+            lose: () => {
+                [400, 350, 300, 250].forEach((f, i) => {
+                    setTimeout(() => Sound.playTone(f, 'triangle', 0.3, 0.1), i * 300);
+                });
+            }
+        };
+
+        /**
+         * GAME DATA
+         * Levels, Materials, and 40 Questions (Kurikulum Merdeka Kelas 4 SD)
+         */
+        const gameData = {
+            levels: [
+                {
+                    id: 1,
+                    title: "Desa Angka",
+                    icon: "🔢",
+                    color: "from-green-400 to-green-600",
+                    material: "Selamat datang di Desa Angka! Di sini kita akan mengingat kembali nama-nama bilangan, nilai tempat (Satuan, Puluhan, Ratusan, Ribuan), dan membandingkan bilangan. Ingat: Ribuan memiliki 4 angka!",
+                    hint: "Perhatikan jumlah angkanya. Ribuan punya 3 angka setelah titik."
+                },
+                {
+                    id: 2,
+                    title: "Hutan Operasi",
+                    icon: "🌳",
+                    color: "from-blue-400 to-blue-600",
+                    material: "Kita masuk ke Hutan Operasi! Siapkan kemampuan penjumlahan dan penguranganmu. Untuk angka besar, lebih mudah dihitung dengan cara bersusun ke bawah. Semangat!",
+                    hint: "Gunakan cara susun ke bawah jika angkanya besar."
+                },
+                {
+                    id: 3,
+                    title: "Gunung Perkalian",
+                    icon: "⛰️",
+                    color: "from-orange-400 to-red-500",
+                    material: "Wow, Gunung Perkalian sangat tinggi! Perkalian adalah penjumlahan berulang, dan pembagian adalah kebalikannya. Contoh: 3 x 4 = 12, maka 12 : 4 = 3.",
+                    hint: "Ingat tabel perkalian dasar, itu kunci utamanya!"
+                },
+                {
+                    id: 4,
+                    title: "Istana Matematika",
+                    icon: "👑",
+                    color: "from-purple-500 to-pink-600",
+                    material: "Akhirnya tiba di Istana Matematika! Raja memberimu tantangan campuran. Ingat aturan hitung: Perkalian & Pembagian dikerjakan LEBIH DULU daripada Penjumlahan & Pengurangan, kecuali ada di dalam kurung ().",
+                    hint: "Kerjakan yang di dalam kurung dulu, lalu perkalian/pembagian!"
+                }
+            ],
+            badges: [
+                { id: "b1", name: "Penjaga Angka", icon: "🔢", desc: "Selesaikan Level 1", req: 1 },
+                { id: "b2", name: "Ahli Operasi", icon: "🌟", desc: "Selesaikan Level 2", req: 2 },
+                { id: "b3", name: "Raja Perkalian", icon: "⚔️", desc: "Selesaikan Level 3", req: 3 },
+                { id: "b4", name: "Master Matematika", icon: "👑", desc: "Selesaikan Level 4", req: 4 }
+            ],
+            questions: {
+                1: [ // Level 1: Bilangan
+                    { q: "Lambang bilangan 'Tiga ribu empat ratus lima puluh' adalah...", a: "3.450", o: ["3.045", "3.405", "3.540"] },
+                    { q: "Pada bilangan 4.789, angka 7 menempati nilai tempat...", a: "Ratusan", o: ["Ribuan", "Puluhan", "Satuan"] },
+                    { q: "Bandingkan: 5.670 ... 5.760. Tanda yang tepat adalah...", a: "<", o: [">", "=", "+"] },
+                    { q: "Urutan bilangan dari yang terkecil: 1.200, 1.150, 1.250 adalah...", a: "1.150, 1.200, 1.250", o: ["1.200, 1.150, 1.250", "1.250, 1.200, 1.150", "1.150, 1.250, 1.200"] },
+                    { q: "Bilangan 6.000 + 400 + 30 + 5 sama dengan...", a: "6.435", o: ["6.045", "6.453", "4.635"] },
+                    { q: "Cara membaca bilangan 7.015 adalah...", a: "Tujuh ribu lima belas", o: ["Tujuh ribu sepuluh lima", "Tujuh ratus lima belas", "Tujuh ribu seratus lima"] },
+                    { q: "Selisih angka 5 dan 2 pada bilangan 5.420 adalah...", a: "4.980", o: ["3", "4.900", "5.020"] }, // 5000 - 20
+                    { q: "Bilangan antara 3.450 dan 3.452 adalah...", a: "3.451", o: ["3.453", "3.449", "3.541"] },
+                    { q: "Pembulatan 4.380 ke ratusan terdekat adalah...", a: "4.400", o: ["4.300", "4.000", "4.500"] },
+                    { q: "2.100, 2.200, 2.300, ... Bilangan selanjutnya adalah?", a: "2.400", o: ["2.350", "2.500", "2.000"] }
+                ],
+                2: [ // Level 2: Penjumlahan & Pengurangan
+                    { q: "Hasil dari 2.500 + 1.300 = ...", a: "3.800", o: ["3.700", "4.800", "3.900"] },
+                    { q: "Hasil dari 4.500 - 1.250 = ...", a: "3.250", o: ["3.350", "3.200", "2.250"] },
+                    { q: "Budi punya 1.200 kelereng. Diberi paman 500 kelereng. Berapa total kelereng Budi?", a: "1.700", o: ["700", "1.600", "1.800"] },
+                    { q: "Petani memanen 3.000 jeruk. 250 jeruk busuk. Sisa jeruk yang bagus adalah...", a: "2.750", o: ["2.850", "3.250", "2.500"] },
+                    { q: "Hasil penjumlahan susun 1.345 + 127 = ...", a: "1.472", o: ["1.462", "1.572", "1.482"] },
+                    { q: "5.000 - 1.234 = ...", a: "3.766", o: ["4.766", "3.866", "3.776"] },
+                    { q: "Bilangan titik-titik di bawah ini: ... + 150 = 400", a: "250", o: ["150", "350", "550"] },
+                    { q: "Sita lahir tahun 2014. Sekarang tahun 2024. Umur Sita adalah... tahun.", a: "10", o: ["9", "11", "12"] },
+                    { q: "Selisih 5.555 dan 1.111 adalah...", a: "4.444", o: ["6.666", "3.333", "5.444"] },
+                    { q: "100 + 200 + 300 = ...", a: "600", o: ["500", "700", "800"] }
+                ],
+                3: [ // Level 3: Perkalian & Pembagian
+                    { q: "Hasil dari 12 x 4 = ...", a: "48", o: ["44", "52", "46"] },
+                    { q: "Hasil dari 50 : 5 = ...", a: "10", o: ["5", "15", "8"] },
+                    { q: "Ada 5 kotak pensil. Tiap kotak berisi 12 pensil. Total pensil adalah...", a: "60", o: ["50", "70", "48"] },
+                    { q: "Ibu punya 60 permen, dibagikan rata ke 5 anak. Tiap anak dapat... permen.", a: "12", o: ["10", "15", "11"] },
+                    { q: "Jika 8 x 7 = 56, maka 56 : 7 = ...", a: "8", o: ["7", "6", "9"] },
+                    { q: "20 x 5 = ...", a: "100", o: ["50", "150", "80"] },
+                    { q: "100 : 4 = ...", a: "25", o: ["20", "30", "15"] },
+                    { q: "Lanjutkan pola: 2, 4, 8, 16, ...", a: "32", o: ["24", "20", "64"] },
+                    { q: "15 x 10 = ...", a: "150", o: ["105", "1500", "25"] },
+                    { q: "Berapa hasil dari 0 x 999?", a: "0", o: ["999", "1", "90"] }
+                ],
+                4: [ // Level 4: Campuran & HOTS
+                    { q: "Hasil dari 10 + 5 x 2 = ... (Ingat aturan hitung!)", a: "20", o: ["30", "25", "17"] },
+                    { q: "Hasil dari (20 - 5) : 3 = ...", a: "5", o: ["15", "10", "3"] },
+                    { q: "Aku adalah bilangan. Jika aku dikalikan 3 hasilnya 30. Siapakah aku?", a: "10", o: ["9", "11", "33"] },
+                    { q: "Andi beli 2 buku masing-masing Rp5.000. Ia bayar dengan uang Rp20.000. Kembaliannya?", a: "10.000", o: ["5.000", "15.000", "0"] },
+                    { q: "Hasil dari 100 - 20 x 4 = ...", a: "20", o: ["320", "80", "0"] },
+                    { q: "Jika A : 2 = 15, maka nilai A adalah...", a: "30", o: ["17", "13", "7"] },
+                    { q: "Umur Ayah 3 kali umurku. Umurku 10 tahun. Jumlah umur kami adalah...", a: "40", o: ["30", "50", "20"] },
+                    { q: "50 + 50 : 2 = ...", a: "75", o: ["50", "100", "25"] },
+                    { q: "Dua bilangan dijumlahkan hasilnya 10. Selisihnya 2. Bilangan berapakah itu?", a: "6 dan 4", o: ["5 dan 5", "7 dan 3", "8 dan 2"] },
+                    { q: "Berapa jumlah kaki dari 3 ekor sapi dan 4 ekor ayam?", a: "20", o: ["14", "24", "18"] } // 3*4 + 4*2 = 12+8=20
+                ]
+            }
+        };
+
+        /**
+         * STATE MANAGEMENT
+         */
+        let state = {
+            unlockedLevel: 1,
+            totalScore: 0,
+            maxCombo: 0,
+            badges: [],
+            isDarkMode: false
+        };
+
+        let currentSession = {
+            level: 1,
+            questions: [],
+            qIndex: 0,
+            score: 0,
+            lives: 3,
+            combo: 0,
+            timeLeft: 20,
+            timerInterval: null
+        };
+
+        /**
+         * INITIALIZATION & UTILS
+         */
+        window.onload = () => {
+            loadSave();
+            applyDarkMode();
+            
+            // Loading Screen Animation
+            let w = 0;
+            const loader = setInterval(() => {
+                w += 20;
+                document.getElementById('loading-bar').style.width = w + '%';
+                if (w >= 100) {
+                    clearInterval(loader);
+                    setTimeout(() => {
+                        switchScreen('screen-home');
+                        // init audio context on first click
+                        document.body.addEventListener('click', initAudioContext, {once:true});
+                    }, 500);
+                }
+            }, 300);
+        };
+
+        function initAudioContext() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function saveGame() {
+            localStorage.setItem('mathHeroSave', JSON.stringify(state));
+        }
+
+        function loadSave() {
+            const saved = localStorage.getItem('mathHeroSave');
+            if (saved) {
+                state = { ...state, ...JSON.parse(saved) };
+            }
+        }
+
+        function switchScreen(screenId) {
+            Sound.click();
+            document.querySelectorAll('#app-container > div > div[id^="screen-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            document.getElementById(screenId).classList.add('animate-fadeIn');
+            
+            if (screenId === 'screen-map') buildMap();
+            if (screenId === 'screen-home') {
+                document.getElementById('map-total-score').innerText = state.totalScore;
+            }
+        }
+
+        function toggleFullscreen() {
+            Sound.click();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    showToast(`Error: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function toggleDarkMode() {
+            Sound.click();
+            state.isDarkMode = !state.isDarkMode;
+            saveGame();
+            applyDarkMode();
+        }
+
+        function applyDarkMode() {
+            const icon = document.getElementById('dark-mode-icon');
+            if (state.isDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('app-container').classList.replace('from-brand-500', 'from-gray-800');
+                document.getElementById('app-container').classList.replace('to-magic-dark', 'to-gray-900');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('app-container').classList.replace('from-gray-800', 'from-brand-500');
+                document.getElementById('app-container').classList.replace('to-gray-900', 'to-magic-dark');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            }
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'glass bg-black/80 text-white px-4 py-2 rounded-full shadow-lg transform transition-all duration-300 opacity-0 translate-y-[-20px] font-bold text-sm text-center';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-20px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        /**
+         * MAP MENU
+         */
+        function startGame() {
+            switchScreen('screen-map');
+        }
+
+        function buildMap() {
+            const mapContainer = document.getElementById('map-levels');
+            mapContainer.innerHTML = '<div class="absolute w-2 bg-yellow-400/30 h-full left-1/2 -translate-x-1/2 z-0 rounded-full"></div>';
+            
+            document.getElementById('map-total-score').innerText = state.totalScore;
+
+            gameData.levels.forEach((lvl, index) => {
+                const isUnlocked = lvl.id <= state.unlockedLevel;
+                const isCurrent = lvl.id === state.unlockedLevel;
+                
+                const box = document.createElement('div');
+                box.className = `relative z-10 my-6 w-full max-w-[280px] flex items-center ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`;
+                
+                let content = `
+                    <button onclick="openMaterial(${lvl.id})" ${!isUnlocked ? 'disabled' : ''} class="w-full glass p-4 rounded-3xl btn-3d border-2 flex items-center gap-4 shadow-xl transition-all ${isUnlocked ? 'border-yellow-400 opacity-100' : 'border-gray-500 opacity-60 grayscale'} ${isCurrent ? 'animate-pulse-fast border-4' : ''}">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br ${lvl.color} flex items-center justify-center text-3xl shadow-inner border-2 border-white/50">
+                            ${isUnlocked ? lvl.icon : '<i class="fas fa-lock text-white/50"></i>'}
+                        </div>
+                        <div class="text-left">
+                            <div class="text-xs uppercase font-bold text-gray-300">Level ${lvl.id}</div>
+                            <div class="text-lg font-bold text-white shadow-black drop-shadow-md">${lvl.title}</div>
+                        </div>
+                    </button>
+                `;
+                box.innerHTML = content;
+                mapContainer.appendChild(box);
+            });
+            
+            // Auto scroll to unlocked level
+            setTimeout(() => {
+                const container = document.getElementById('map-levels');
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        /**
+         * MATERIAL / STORY
+         */
+        function openMaterial(levelId) {
+            Sound.click();
+            currentSession.level = levelId;
+            const lvlData = gameData.levels.find(l => l.id === levelId);
+            
+            document.getElementById('material-title').innerHTML = `Level ${lvlData.id} - ${lvlData.title}`;
+            document.getElementById('material-content').innerText = lvlData.material;
+            
+            switchScreen('screen-material');
+        }
+
+        /**
+         * GAMEPLAY LOGIC
+         */
+        function startQuiz() {
+            Sound.click();
+            const lvl = currentSession.level;
+            
+            // Prepare Questions (shuffle and take 10)
+            let pool = [...gameData.questions[lvl]];
+            pool.sort(() => Math.random() - 0.5);
+            currentSession.questions = pool.slice(0, 10);
+            
+            // Initialize session
+            currentSession.qIndex = 0;
+            currentSession.score = 0;
+            currentSession.lives = 3;
+            currentSession.combo = 0;
+            
+            updateGameUI();
+            switchScreen('screen-game');
+            loadQuestion();
+        }
+
+        function updateGameUI() {
+            document.getElementById('game-level-name').innerText = gameData.levels.find(l => l.id === currentSession.level).title;
+            document.getElementById('game-score').innerText = currentSession.score;
+            document.getElementById('game-combo').innerText = currentSession.combo;
+            
+            // Lives
+            const livesDiv = document.getElementById('game-lives');
+            livesDiv.innerHTML = '';
+            for(let i=0; i<3; i++) {
+                if(i < currentSession.lives) {
+                    livesDiv.innerHTML += '<i class="fas fa-heart animate-pulse"></i>';
+                } else {
+                    livesDiv.innerHTML += '<i class="fas fa-heart-broken text-gray-600"></i>';
+                }
+            }
+        }
+
+        function loadQuestion() {
+            const qData = currentSession.questions[currentSession.qIndex];
+            document.getElementById('game-q-current').innerText = currentSession.qIndex + 1;
+            document.getElementById('game-question').innerText = qData.q;
+            
+            // Prepare options (1 correct, 3 wrong -> shuffle)
+            let options = [...qData.o, qData.a];
+            options.sort(() => Math.random() - 0.5);
+            
+            const optContainer = document.getElementById('game-options');
+            optContainer.innerHTML = '';
+            
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-4 glass rounded-2xl text-xl font-bold text-white btn-3d border-2 border-white/30 hover:bg-white/20 break-words';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, qData.a, btn);
+                optContainer.appendChild(btn);
+            });
+
+            // Reset Timer
+            currentSession.timeLeft = 20;
+            updateTimerBar();
+            clearInterval(currentSession.timerInterval);
+            currentSession.timerInterval = setInterval(timerTick, 1000);
+        }
+
+        function timerTick() {
+            currentSession.timeLeft--;
+            updateTimerBar();
+            
+            if (currentSession.timeLeft <= 0) {
+                clearInterval(currentSession.timerInterval);
+                handleWrongAnswer(null); // Time out = wrong
+            }
+        }
+
+        function updateTimerBar() {
+            const bar = document.getElementById('game-timer-bar');
+            const pct = (currentSession.timeLeft / 20) * 100;
+            bar.style.width = pct + '%';
+            
+            if (pct > 50) bar.className = 'h-full bg-green-500 progress-bar-transition';
+            else if (pct > 20) bar.className = 'h-full bg-yellow-500 progress-bar-transition';
+            else bar.className = 'h-full bg-red-500 progress-bar-transition animate-pulse';
+        }
+
+        function disableOptions() {
+            document.querySelectorAll('#game-options button').forEach(b => b.disabled = true);
+        }
+
+        function checkAnswer(selected, correct, btnEl) {
+            clearInterval(currentSession.timerInterval);
+            disableOptions();
+            
+            if (selected === correct) {
+                // Correct
+                Sound.correct();
+                btnEl.classList.replace('glass', 'bg-green-500');
+                btnEl.classList.add('border-green-300');
+                fireConfetti();
+                
+                let pts = 10;
+                currentSession.combo++;
+                if(currentSession.combo > state.maxCombo) {
+                    state.maxCombo = currentSession.combo;
+                }
+                
+                if(currentSession.combo >= 3) {
+                    pts += 5; // Bonus combo
+                    showToast('Combo Bonus +5!');
+                }
+                
+                currentSession.score += pts;
+                showToast('+ ' + pts + ' Poin!');
+                
+                setTimeout(nextQuestion, 1500);
+            } else {
+                handleWrongAnswer(btnEl, correct);
+            }
+            updateGameUI();
+        }
+
+        function handleWrongAnswer(btnEl, correctAns) {
+            Sound.wrong();
+            currentSession.lives--;
+            currentSession.combo = 0;
+            
+            document.getElementById('screen-game').classList.add('animate-shake');
+            setTimeout(() => document.getElementById('screen-game').classList.remove('animate-shake'), 500);
+
+            if (btnEl) {
+                btnEl.classList.replace('glass', 'bg-red-500');
+                btnEl.classList.add('border-red-300');
+                
+                // Show correct one
+                document.querySelectorAll('#game-options button').forEach(b => {
+                    if(b.innerText === correctAns) {
+                        b.classList.replace('glass', 'bg-green-500');
+                        b.classList.add('animate-pulse');
+                    }
+                });
+            } else {
+                showToast("Waktu Habis!");
+            }
+
+            updateGameUI();
+
+            setTimeout(() => {
+                if (currentSession.lives <= 0) {
+                    endGame(false);
+                } else {
+                    nextQuestion();
+                }
+            }, 2000);
+        }
+
+        function nextQuestion() {
+            currentSession.qIndex++;
+            if (currentSession.qIndex >= currentSession.questions.length) {
+                endGame(true);
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function showHint() {
+            Sound.click();
+            const text = gameData.levels.find(l => l.id === currentSession.level).hint;
+            document.getElementById('hint-text').innerText = text;
+            const hintBox = document.getElementById('hint-popup');
+            hintBox.classList.remove('hidden');
+            setTimeout(() => hintBox.classList.add('hidden'), 4000);
+        }
+
+        function fireConfetti() {
+            const colors = ['#fde047', '#3b82f6', '#ef4444', '#10b981', '#a855f7'];
+            for(let i=0; i<30; i++) {
+                let conf = document.createElement('div');
+                conf.className = 'absolute w-3 h-3 rounded-sm z-50 pointer-events-none';
+                conf.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+                conf.style.left = (Math.random() * 100) + 'vw';
+                conf.style.top = '-10px';
+                document.body.appendChild(conf);
+                
+                conf.animate([
+                    { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
+                    { transform: `translate3d(${Math.random()*200 - 100}px, ${window.innerHeight}px, 0) rotate(${Math.random()*360}deg)`, opacity: 0 }
+                ], { 
+                    duration: 1000 + Math.random()*1500, 
+                    easing: 'cubic-bezier(.37,0,.63,1)' 
+                });
+                
+                setTimeout(() => conf.remove(), 2500);
+            }
+        }
+
+        /**
+         * GAME OVER / RESULT
+         */
+        function endGame(isWin) {
+            clearInterval(currentSession.timerInterval);
+            
+            const starContainer = document.getElementById('result-stars');
+            starContainer.innerHTML = '';
+            
+            document.getElementById('result-score').innerText = currentSession.score;
+            document.getElementById('result-max-combo').innerText = currentSession.combo + "x";
+            
+            if (isWin) {
+                Sound.win();
+                document.getElementById('result-title').innerText = "Level Selesai!";
+                document.getElementById('result-correct').innerText = `${currentSession.questions.length - (3 - currentSession.lives)}/10`;
+                
+                // Calc stars
+                let stars = 1;
+                if(currentSession.lives >= 2) stars = 2;
+                if(currentSession.lives === 3) stars = 3;
+                
+                for(let i=0; i<3; i++) {
+                    setTimeout(() => {
+                        Sound.click();
+                        starContainer.innerHTML += `<i class="fas fa-star ${i < stars ? 'text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : 'text-gray-600'}"></i>`;
+                    }, i * 300);
+                }
+
+                state.totalScore += currentSession.score;
+                
+                // Unlock next level logic
+                if (currentSession.level === state.unlockedLevel && state.unlockedLevel < 4) {
+                    state.unlockedLevel++;
+                    showToast("Level Baru Terbuka!");
+                }
+
+                // Badge Logic
+                checkBadges();
+
+                document.getElementById('btn-next-level').classList.remove('hidden');
+
+                // If Level 4 is beaten, show certificate button instead
+                if(currentSession.level === 4) {
+                    document.getElementById('btn-next-level').innerHTML = 'Ambil Sertifikat <i class="fas fa-award"></i>';
+                    document.getElementById('btn-next-level').onclick = () => showCertificate();
+                }
+
+            } else {
+                Sound.lose();
+                document.getElementById('result-title').innerText = "Coba Lagi!";
+                document.getElementById('result-correct').innerText = `${currentSession.qIndex}/10`;
+                starContainer.innerHTML = '<i class="fas fa-star-half-alt text-gray-500"></i><i class="far fa-star text-gray-500"></i><i class="far fa-star text-gray-500"></i>';
+                document.getElementById('btn-next-level').classList.add('hidden');
+            }
+
+            saveGame();
+            switchScreen('screen-result');
+        }
+
+        function retryLevel() {
+            Sound.click();
+            switchScreen('screen-material');
+        }
+
+        function checkBadges() {
+            const badgeBox = document.getElementById('result-badge');
+            badgeBox.classList.add('hidden');
+
+            const newBadge = gameData.badges.find(b => b.req === currentSession.level);
+            if (newBadge && !state.badges.includes(newBadge.id)) {
+                state.badges.push(newBadge.id);
+                document.getElementById('badge-icon').innerText = newBadge.icon;
+                badgeBox.classList.remove('hidden');
+                setTimeout(() => Sound.playTone(800, 'square', 0.5), 1000); // fanfare
+            }
+        }
+
+        function showCertificate() {
+            Sound.win();
+            document.getElementById('cert-score').innerText = state.totalScore;
+            switchScreen('screen-certificate');
+            fireConfetti();
+            setTimeout(fireConfetti, 1000);
+            setTimeout(fireConfetti, 2000);
+        }
+
+        /**
+         * PAUSE & SETTINGS MENU
+         */
+        function pauseGame() {
+            Sound.click();
+            clearInterval(currentSession.timerInterval);
+            document.getElementById('overlay-pause').classList.remove('hidden');
+        }
+
+        function resumeGame() {
+            Sound.click();
+            document.getElementById('overlay-pause').classList.add('hidden');
+            currentSession.timerInterval = setInterval(timerTick, 1000);
+        }
+
+        function quitGame() {
+            Sound.click();
+            clearInterval(currentSession.timerInterval);
+            document.getElementById('overlay-pause').classList.add('hidden');
+            switchScreen('screen-map');
+        }
+
+        function resetProgressConfirm() {
+            Sound.click();
+            if (confirm("Yakin ingin menghapus semua progress dan mulai dari awal?")) {
+                localStorage.removeItem('mathHeroSave');
+                state = { unlockedLevel: 1, totalScore: 0, maxCombo: 0, badges: [], isDarkMode: false };
+                applyDarkMode();
+                showToast("Progress Direset!");
+                document.getElementById('map-total-score').innerText = '0';
+            }
+        }
+
+        /**
+         * STATS OVERLAY
+         */
+        function showStats() {
+            Sound.click();
+            document.getElementById('stat-total-score').innerText = state.totalScore;
+            document.getElementById('stat-max-combo').innerText = state.maxCombo + "x";
+            
+            const badgeCont = document.getElementById('badge-container');
+            badgeCont.innerHTML = '';
+            gameData.badges.forEach(b => {
+                const has = state.badges.includes(b.id);
+                badgeCont.innerHTML += `
+                    <div class="flex flex-col items-center p-2 bg-white/5 rounded-xl border ${has ? 'border-yellow-400 bg-yellow-400/20' : 'border-white/10 opacity-50 grayscale'}">
+                        <div class="text-3xl mb-1">${b.icon}</div>
+                        <div class="text-[10px] text-center leading-tight font-bold text-gray-300">${b.name}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('overlay-stats').classList.remove('hidden');
+        }
+
+        function closeStats() {
+            Sound.click();
+            document.getElementById('overlay-stats').classList.add('hidden');
+        }
+
+    </script>
+</body>
+</html>
